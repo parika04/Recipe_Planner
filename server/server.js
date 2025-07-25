@@ -7,7 +7,11 @@ const authRoutes = require('./routes/auth'); // Route file
 const app = express();
 
 // MIDDLEWARE
-app.use(cors());
+app.use(cors({
+  origin: 'https://your-frontend.vercel.app', // frontend's deployed URL
+  credentials: true, // if you send cookies/auth
+}));
+
 app.use(express.json());
 
 // ROUTES (ONLY ONCE)
