@@ -47,7 +47,7 @@ Vercel (deployment)
 
 Git & GitHub (version control)
 
-##Deployment
+## Deployment
 Frontend: Deployed on Render
 
 Backend: Deployed on Vercel (or other Node hosts)
