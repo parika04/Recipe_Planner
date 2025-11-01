@@ -15,13 +15,34 @@ const RegisterPage = ({ onSwitchToLogin }) => {
     e.preventDefault();
     setLoading(true);
     setError('');
-    
+
     if (password !== confirmPassword) {
       setError('Passwords do not match');
       setLoading(false);
       return;
     }
-    
+
+    if (password.length < 8) {
+      setError('Password must be at least 8 characters long');
+      setLoading(false);
+      return;
+    }
+    if (!/[A-Z]/.test(password)) {
+      setError('Password must contain at least one uppercase letter');
+      setLoading(false);
+      return;
+    }
+    if (!/[0-9]/.test(password)) {
+      setError('Password must contain at least one number');
+      setLoading(false);
+      return;
+    }
+    if (!/[^A-Za-z0-9]/.test(password)) {
+      setError('Password must contain at least one special character');
+      setLoading(false);
+      return;
+    }
+
     try {
       await register(name, email, password);
     } catch (err) {
@@ -39,7 +60,7 @@ const RegisterPage = ({ onSwitchToLogin }) => {
           <h1 className="text-3xl font-bold text-gray-800">Create Account</h1>
           <p className="text-gray-600 mt-2">Join our recipe community</p>
         </div>
-        
+
         <form onSubmit={handleSubmit} className="space-y-6">
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-2">
@@ -54,7 +75,7 @@ const RegisterPage = ({ onSwitchToLogin }) => {
               required
             />
           </div>
-          
+
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-2">
               Email Address
@@ -68,7 +89,7 @@ const RegisterPage = ({ onSwitchToLogin }) => {
               required
             />
           </div>
-          
+
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-2">
               Password
@@ -82,7 +103,7 @@ const RegisterPage = ({ onSwitchToLogin }) => {
               required
             />
           </div>
-          
+
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-2">
               Confirm Password
@@ -96,11 +117,18 @@ const RegisterPage = ({ onSwitchToLogin }) => {
               required
             />
           </div>
-          
+          <div className="text-xs text-gray-500 mt-1 mb-2">
+            Password must be at least 8 characters and contain:
+            <ul className="list-disc ml-5">
+              <li>One uppercase letter</li>
+              <li>One number</li>
+              <li>One special character (e.g., !@#$%^&*)</li>
+            </ul>
+          </div>
           {error && (
             <div className="text-red-600 text-sm text-center">{error}</div>
           )}
-          
+
           <button
             type="submit"
             disabled={loading}
@@ -109,7 +137,7 @@ const RegisterPage = ({ onSwitchToLogin }) => {
             {loading ? 'Creating Account...' : 'Create Account'}
           </button>
         </form>
-        
+
         <div className="text-center mt-6">
           <p className="text-gray-600">
             Already have an account?{' '}

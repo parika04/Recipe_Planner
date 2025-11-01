@@ -1,7 +1,7 @@
 import React, { useState, useContext } from 'react';
 import { Heart, Trash2 } from 'lucide-react';
 import AuthContext from './AuthContext';
-import mockAPI from '../mockAPI'; 
+import mockAPI from '../RecipeAPI'; 
 import RecipeModal from './RecipeModal';
 
 const FavoritesView = () => {
