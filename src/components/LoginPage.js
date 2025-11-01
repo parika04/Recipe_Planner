@@ -1,14 +1,14 @@
-import React, { useState, useContext } from 'react';
+import { useState, useContext } from 'react';
 import { ChefHat } from 'lucide-react';
 import AuthContext from './AuthContext';
 
-const LoginPage = ({ onSwitchToRegister }) => {
+
+const LoginPage = ({ onSwitchToRegister, onForgotPassword }) => {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
   const { login } = useContext(AuthContext);
-
   const handleSubmit = async (e) => {
     e.preventDefault();
     setLoading(true);
@@ -64,6 +64,15 @@ const LoginPage = ({ onSwitchToRegister }) => {
           {error && (
             <div className="text-red-600 text-sm text-center">{error}</div>
           )}
+          <div className="text-right mt-2">
+            <button
+              type="button"
+              onClick={onForgotPassword}
+              className="text-sm text-orange-500 hover:text-orange-600 font-medium"
+            >
+              Forgot Password?
+            </button>
+          </div>
 
           <button
             type="submit"

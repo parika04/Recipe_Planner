@@ -1,6 +1,6 @@
-import React, { useState } from 'react';
+import { useState } from 'react';
 import { Search } from 'lucide-react';
-import mockAPI from '../mockAPI'; // We'll prepare this next
+import RecipeAPI from '../RecipeAPI'; 
 import RecipeCard from './RecipeCard';
 import RecipeModal from './RecipeModal';
 
@@ -18,7 +18,7 @@ const RecipeSearch = () => {
     const firstIngredient = ingredients.split(',')[0].trim();
     
     try {
-      const results = await mockAPI.searchRecipes(firstIngredient);
+      const results = await RecipeAPI.searchRecipes(firstIngredient);
       setRecipes(results.slice(0, 12)); // Limit to 12 results
     } catch (error) {
       console.error('Search failed:', error);
@@ -30,7 +30,7 @@ const RecipeSearch = () => {
   const handleRecipeClick = async (recipe) => {
     setLoading(true);
     try {
-      const details = await mockAPI.getRecipeDetails(recipe.idMeal);
+      const details = await RecipeAPI.getRecipeDetails(recipe.idMeal);
       setSelectedRecipe(details);
       setShowRecipeModal(true);
     } catch (error) {
