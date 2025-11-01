@@ -1,6 +1,6 @@
 
 
-const API_URL = 'http://localhost:5000/api/auth';
+const API_URL = 'https://recipe-planner-6bxg.onrender.com/api/auth';
 
 export async function register(name, email, password) {
   const response = await fetch(`${API_URL}/register`, {
@@ -23,3 +23,4 @@ export async function login(email, password) {
   if (!response.ok) throw new Error(data.message || 'Login failed');
   return data;
 }
+
