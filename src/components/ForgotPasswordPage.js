@@ -13,10 +13,16 @@ const ForgotPasswordPage = ({ onBackToLogin, onSubmit }) => {
     setMessage('');
 
     try {
-      await onSubmit(email);
-      setMessage('If this email is registered, you will receive password reset instructions shortly.');
+      const result = await onSubmit(email);
+      // The message from the API will indicate success
+      setMessage(result.message || 'Reset email has been sent. Please check your inbox.');
     } catch (err) {
-      setError(err.message || 'Failed to send reset instructions.');
+      // Check if it's a 404 (user doesn't exist) or other error
+      if (err.message.includes('does not exist') || err.message.includes('User')) {
+        setError(err.message || 'User does not exist.');
+      } else {
+        setError(err.message || 'Failed to send reset instructions.');
+      }
     } finally {
       setLoading(false);
     }
@@ -25,10 +31,12 @@ const ForgotPasswordPage = ({ onBackToLogin, onSubmit }) => {
   return (
     <div className="min-h-screen flex items-center justify-center px-4">
       <div className="max-w-md w-full bg-white rounded-2xl shadow-xl p-8">
-        <h2 className="text-3xl font-bold text-gray-800 mb-6">Reset Password</h2>
-        <p className="text-gray-600 mb-6">
-          Enter your email address and we'll send you instructions to reset your password.
-        </p>
+        <div className="text-center mb-8">
+          <h2 className="text-3xl font-bold text-gray-800 mb-4">Reset Password</h2>
+          <p className="text-gray-600">
+            Enter your email address and we'll send you instructions to reset your password.
+          </p>
+        </div>
 
         <form onSubmit={handleSubmit} className="space-y-6">
           <div>

@@ -1,16 +1,45 @@
-import React, { useState, useContext } from 'react';
+import React, { useState } from 'react';
 import { Heart, X, Plus } from 'lucide-react';
 import AuthContext from './AuthContext';
 
 const RecipeModal = ({ recipe, onClose }) => {
   const { addToFavorites, favorites, addToMealPlan } = React.useContext(AuthContext);
   const [selectedDate, setSelectedDate] = useState('');
+  const [isAddingToMealPlan, setIsAddingToMealPlan] = useState(false);
+  const [mealPlanError, setMealPlanError] = useState('');
   const isFavorite = favorites.some(fav => fav.idMeal === recipe.idMeal);
 
-  const handleAddToMealPlan = () => {
-    if (selectedDate) {
-      addToMealPlan(recipe, selectedDate);
+  const handleAddToFavorites = async () => {
+    try {
+      await addToFavorites(recipe);
+      // Update UI if successful
+      // The context will update automatically
+    } catch (err) {
+      const errorMessage = err.message || 'Failed to add to favorites';
+      alert(errorMessage);
+      
+      // If it's a token/auth error, the App.js will handle the redirect
+      // But we can provide more context here
+      if (errorMessage.includes('token') || errorMessage.includes('authentication') || errorMessage.includes('log in')) {
+        console.warn('Authentication issue detected');
+      }
+    }
+  };
+
+  const handleAddToMealPlan = async () => {
+    if (!selectedDate) return;
+    
+    setIsAddingToMealPlan(true);
+    setMealPlanError('');
+    
+    try {
+      await addToMealPlan(recipe, selectedDate);
       alert('Recipe added to meal plan!');
+      setSelectedDate(''); // Clear the date input
+    } catch (err) {
+      setMealPlanError(err.message || 'Failed to add to meal plan');
+    } finally {
+      setIsAddingToMealPlan(false);
     }
   };
 
@@ -50,10 +79,11 @@ const RecipeModal = ({ recipe, onClose }) => {
               
               <div className="flex gap-4 mb-6">
                 <button
-                  onClick={() => addToFavorites(recipe)}
+                  onClick={handleAddToFavorites}
+                  disabled={isFavorite}
                   className={`flex items-center px-4 py-2 rounded-lg font-medium transition-colors ${
                     isFavorite
-                      ? 'bg-red-100 text-red-700'
+                      ? 'bg-red-100 text-red-700 cursor-not-allowed'
                       : 'bg-gray-100 text-gray-700 hover:bg-red-100 hover:text-red-700'
                   }`}
                 >
@@ -73,12 +103,15 @@ const RecipeModal = ({ recipe, onClose }) => {
                   />
                   <button
                     onClick={handleAddToMealPlan}
-                    disabled={!selectedDate}
+                    disabled={!selectedDate || isAddingToMealPlan}
                     className="px-4 py-2 bg-orange-500 text-white rounded-lg hover:bg-orange-600 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
                   >
                     <Plus className="w-4 h-4" />
                   </button>
                 </div>
+                {mealPlanError && (
+                  <p className="text-red-600 text-sm mt-2">{mealPlanError}</p>
+                )}
               </div>
             </div>
             

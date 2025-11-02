@@ -1,21 +1,37 @@
-import React, { useState, useContext } from 'react';
+import React, { useState } from 'react';
 import { Heart, Trash2 } from 'lucide-react';
 import AuthContext from './AuthContext';
-import mockAPI from '../RecipeAPI'; 
+import RecipeAPI from '../RecipeAPI'; 
 import RecipeModal from './RecipeModal';
 
 const FavoritesView = () => {
   const { favorites, removeFromFavorites } = React.useContext(AuthContext);
   const [selectedRecipe, setSelectedRecipe] = useState(null);
   const [showRecipeModal, setShowRecipeModal] = useState(false);
+  const [removingId, setRemovingId] = useState(null);
 
   const handleRecipeClick = async (recipe) => {
     try {
-      const details = await mockAPI.getRecipeDetails(recipe.idMeal);
+      const details = await RecipeAPI.getRecipeDetails(recipe.idMeal);
       setSelectedRecipe(details);
       setShowRecipeModal(true);
     } catch (error) {
       console.error('Failed to load recipe details:', error);
+    }
+  };
+
+  const handleRemoveFavorite = async (recipeId) => {
+    if (!window.confirm('Are you sure you want to remove this recipe from favorites?')) {
+      return;
+    }
+
+    setRemovingId(recipeId);
+    try {
+      await removeFromFavorites(recipeId);
+    } catch (err) {
+      alert('Failed to remove favorite: ' + err.message);
+    } finally {
+      setRemovingId(null);
     }
   };
 
@@ -56,8 +72,9 @@ const FavoritesView = () => {
                     View Recipe
                   </button>
                   <button
-                    onClick={() => removeFromFavorites(recipe.idMeal)}
-                    className="text-red-500 hover:text-red-600 transition-colors"
+                    onClick={() => handleRemoveFavorite(recipe.idMeal)}
+                    disabled={removingId === recipe.idMeal}
+                    className="text-red-500 hover:text-red-600 transition-colors disabled:opacity-50"
                   >
                     <Trash2 className="w-4 h-4" />
                   </button>
