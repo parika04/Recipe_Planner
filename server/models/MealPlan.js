@@ -18,8 +18,8 @@ const MealPlanSchema = new mongoose.Schema({
   timestamps: true
 });
 
-// Ensure one meal plan entry per user per date
-MealPlanSchema.index({ userId: 1, date: 1 }, { unique: true });
+// Index for efficient queries (not unique - allows multiple entries per date)
+MealPlanSchema.index({ userId: 1, date: 1 });
 
 module.exports = mongoose.model('MealPlan', MealPlanSchema);
 

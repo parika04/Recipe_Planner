@@ -1,16 +1,13 @@
 const nodemailer = require('nodemailer');
 
-// Create reusable transporter (using Gmail as example - you can use other services)
 const createTransporter = () => {
-  // For development, you can use Gmail with an App Password
-  // For production, use services like SendGrid, AWS SES, Mailgun, etc.
   
   if (process.env.EMAIL_SERVICE === 'gmail') {
     return nodemailer.createTransport({
       service: 'gmail',
       auth: {
         user: process.env.EMAIL_USER,
-        pass: process.env.EMAIL_PASSWORD, // Use App Password, not regular password
+        pass: process.env.EMAIL_PASSWORD, 
       },
     });
   }

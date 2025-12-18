@@ -23,9 +23,16 @@ router.get('/', authMiddleware, async (req, res) => {
     const mealPlans = await MealPlan.find({ userId: req.user.id });
     
     // Convert to object format: { "YYYY-MM-DD": [recipes], ... }
+    // If multiple MealPlan documents exist for same date, merge their recipes
     const mealPlanObject = {};
     mealPlans.forEach(plan => {
-      mealPlanObject[plan.date] = plan.recipes;
+      if (mealPlanObject[plan.date]) {
+        // If date already exists, merge recipes arrays
+        mealPlanObject[plan.date] = [...mealPlanObject[plan.date], ...plan.recipes];
+      } else {
+        // First entry for this date
+        mealPlanObject[plan.date] = plan.recipes;
+      }
     });
 
     res.json(mealPlanObject);
@@ -52,22 +59,18 @@ router.post('/', authMiddleware, async (req, res) => {
       return res.status(400).json({ message: 'Invalid date format. Use YYYY-MM-DD' });
     }
 
-    // Find or create meal plan for this date
+    // Find existing meal plan for this date (if any)
     let mealPlan = await MealPlan.findOne({ 
       userId: req.user.id, 
       date 
     });
 
     if (mealPlan) {
-      // Check if recipe already exists for this date
-      const recipeExists = mealPlan.recipes.some(r => r.idMeal === recipe.idMeal);
-      if (recipeExists) {
-        return res.status(400).json({ message: 'Recipe already in meal plan for this date' });
-      }
-      
+      // Allow multiple entries of the same recipe (e.g., breakfast and dinner)
       mealPlan.recipes.push(recipe);
       await mealPlan.save();
     } else {
+      // Create new meal plan entry for this date
       mealPlan = new MealPlan({
         userId: req.user.id,
         date,
@@ -78,10 +81,6 @@ router.post('/', authMiddleware, async (req, res) => {
 
     res.status(201).json({ message: 'Recipe added to meal plan', mealPlan });
   } catch (err) {
-    if (err.code === 11000) {
-      // This shouldn't happen with the check above, but handle it just in case
-      return res.status(400).json({ message: 'Meal plan entry already exists' });
-    }
     res.status(500).json({ message: 'Server Error: ' + err.message });
   }
 });
@@ -103,16 +102,27 @@ router.delete('/:date/:recipeId', authMiddleware, async (req, res) => {
       return res.status(404).json({ message: 'Meal plan not found for this date' });
     }
 
+    // Remove all instances of this recipe (since duplicates are now allowed)
+    const initialCount = mealPlan.recipes.length;
     mealPlan.recipes = mealPlan.recipes.filter(r => r.idMeal !== recipeId);
+    const removedCount = initialCount - mealPlan.recipes.length;
     
     // If no recipes left, delete the entire meal plan entry
     if (mealPlan.recipes.length === 0) {
       await MealPlan.findByIdAndDelete(mealPlan._id);
-      return res.json({ message: 'Recipe removed from meal plan' });
+      return res.json({ 
+        message: removedCount > 1 
+          ? `${removedCount} recipe instances removed from meal plan` 
+          : 'Recipe removed from meal plan' 
+      });
     }
 
     await mealPlan.save();
-    res.json({ message: 'Recipe removed from meal plan' });
+    res.json({ 
+      message: removedCount > 1 
+        ? `${removedCount} recipe instances removed from meal plan` 
+        : 'Recipe removed from meal plan' 
+    });
   } catch (err) {
     res.status(500).json({ message: 'Server Error: ' + err.message });
   }
